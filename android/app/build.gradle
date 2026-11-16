@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ru.retorika.matext'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "ru.retorika.matext"
+        minSdk 26
+        targetSdk 33
+        versionCode 2
+        versionName "1.1.0"
+    }
+
+    signingConfigs {
+        release {
+            def ksPath = System.getenv("KEYSTORE_FILE") ?: project.findProperty("KEYSTORE_FILE")
+            if (ksPath != null && file(ksPath).exists()) {
+                // No credentials are stored in the repo: supply them via env/gradle.properties
+                storeFile file(ksPath)
+                storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD")
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
+        }
+        debug {
+            applicationIdSuffix ".debug"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    // 100% standalone Android Framework — zero Google Play Services (GMS-free for HarmonyOS 4.2 / EMUI 14.2)
+}
